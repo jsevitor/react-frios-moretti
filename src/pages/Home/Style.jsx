@@ -63,6 +63,9 @@ export const Right_Container = styled.aside`
   @media (min-width: 1024px) {
     display: grid;
     grid-template-columns: 0.5fr 1.5fr;
+    align-items: stretch;
+    max-width: 100%;
+    overflow: hidden;
   }
 `;
 
@@ -74,7 +77,7 @@ export const Grid = styled.div`
 
 export const ImageSmall = styled.img`
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
   object-position: center;
   border: 1px solid #000;
@@ -83,7 +86,7 @@ export const ImageSmall = styled.img`
 export const ImageBig = styled.img`
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* Mantém o enquadramento */
   object-position: center;
   border: 1px solid #000;
 `;

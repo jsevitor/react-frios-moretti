@@ -7,6 +7,8 @@ import {
   Tbody,
   Thead,
   Title,
+  LoaderContainer,
+  LoaderCenter,
 } from "./Styles";
 import { ToastContainer, toast } from "react-toastify";
 import {
@@ -17,11 +19,13 @@ import {
 import api from "../../services/api";
 import { formatCurrency, formatDate } from "../../utils/functions";
 import { FormContext } from "../../contexts/FormContext";
+import { ClipLoader } from "react-spinners";
 
 const FornecedoresCadastrados = () => {
   const { setFormData } = useContext(FormContext);
 
   const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -29,11 +33,14 @@ const FornecedoresCadastrados = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Inicia o loading
       try {
         const response = await api.get("/fornecedores");
         setSuppliers(response.data);
       } catch (error) {
         console.error("Erro ao buscar fornecedor:", error);
+      } finally {
+        setLoading(false); // Finaliza o loading
       }
     };
 
@@ -75,12 +82,15 @@ const FornecedoresCadastrados = () => {
   };
 
   const handleTableUpdate = async () => {
+    setLoading(true); // Inicia o loading
     try {
       const response = await api.get("/fornecedores");
       setSuppliers(response.data);
       toast.info("Lista atualizada com sucesso!");
     } catch (error) {
       toast.error("Erro ao atualizar a lista.");
+    } finally {
+      setLoading(false); // Finaliza o loading
     }
   };
 
@@ -101,7 +111,7 @@ const FornecedoresCadastrados = () => {
 
       // Atualizar a lista de fornecedores após a exclusão
       const response = await api.get("/fornecedores");
-      setSuppliers(response.data); // Corrigido para atualizar suppliers
+      setSuppliers(response.data);
 
       toast.success("Itens deletados com sucesso!");
     } catch (error) {
@@ -140,45 +150,58 @@ const FornecedoresCadastrados = () => {
           </div>
         </Filters>
       </HeaderContainer>
-      <Table>
-        <Thead>
-          <tr>
-            <th className="checkbox"></th>
-            <th>Nome</th>
-            <th>CNPJ</th>
-            <th>E-mail</th>
-            <th>Telefone</th>
-            <th>Celular</th>
-            <th>CEP</th>
-            <th>Cidade</th>
-            <th>Estado</th>
-          </tr>
-        </Thead>
-        <Tbody>
-          {suppliers.map((supplier, index) => (
-            <tr
-              key={index}
-              className={selectedItems.includes(supplier.id) ? "selected" : ""}
-            >
-              <td className="middle checkbox">
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(supplier.id)}
-                  onChange={() => handleCheckboxChange(supplier.id)}
-                />
-              </td>
-              <td>{supplier.nome}</td>
-              <td>{supplier.cnpj}</td>
-              <td>{supplier.email}</td>
-              <td>{supplier.telefone}</td>
-              <td>{supplier.celular}</td>
-              <td>{supplier.cep}</td>
-              <td>{supplier.cidade}</td>
-              <td>{supplier.estado}</td>
+
+      {loading ? (
+        // Exibe o loader enquanto os dados estão carregando
+        <LoaderContainer>
+          <LoaderCenter>
+            <ClipLoader size={50} color={"#75A780"} loading={loading} />
+          </LoaderCenter>
+        </LoaderContainer>
+      ) : (
+        // Exibe a tabela quando os dados estão carregados
+        <Table>
+          <Thead>
+            <tr>
+              <th className="checkbox"></th>
+              <th>Nome</th>
+              <th>CNPJ</th>
+              <th>E-mail</th>
+              <th>Telefone</th>
+              <th>Celular</th>
+              <th>CEP</th>
+              <th>Cidade</th>
+              <th>Estado</th>
             </tr>
-          ))}
-        </Tbody>
-      </Table>
+          </Thead>
+          <Tbody>
+            {suppliers.map((supplier, index) => (
+              <tr
+                key={index}
+                className={
+                  selectedItems.includes(supplier.id) ? "selected" : ""
+                }
+              >
+                <td className="middle checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(supplier.id)}
+                    onChange={() => handleCheckboxChange(supplier.id)}
+                  />
+                </td>
+                <td>{supplier.nome}</td>
+                <td>{supplier.cnpj}</td>
+                <td>{supplier.email}</td>
+                <td>{supplier.telefone}</td>
+                <td>{supplier.celular}</td>
+                <td>{supplier.cep}</td>
+                <td>{supplier.cidade}</td>
+                <td>{supplier.estado}</td>
+              </tr>
+            ))}
+          </Tbody>
+        </Table>
+      )}
 
       {openModal && (
         <Modal onConfirm={handleDelete} onCancel={handleCloseModal} />

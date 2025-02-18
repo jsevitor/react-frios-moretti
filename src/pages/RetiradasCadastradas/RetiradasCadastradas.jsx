@@ -7,16 +7,20 @@ import {
   Tbody,
   Thead,
   Title,
+  LoaderContainer,
+  LoaderCenter,
 } from "./Styles";
 import { ToastContainer, toast } from "react-toastify";
 import { Modal, ModalEditRetiradas } from "../../components/Modal/Modal";
 import api from "../../services/api";
 import { formatCurrency, formatCustomDate } from "../../utils/functions";
 import { FormContext } from "../../contexts/FormContext";
+import { ClipLoader } from "react-spinners";
 
 const RetiradasCadastradas = () => {
   const { setFormData } = useContext(FormContext);
   const [outputs, setOutputs] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -25,20 +29,26 @@ const RetiradasCadastradas = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Inicia o loading
       try {
         const response = await api.get("/retiradas");
         setOutputs(response.data);
       } catch (error) {
         console.error("Erro ao buscar retiradas:", error);
+      } finally {
+        setLoading(false); // Finaliza o loading
       }
     };
 
     const fetchProducts = async () => {
+      setLoading(true); // Inicia o loading
       try {
         const response = await api.get("/produtos");
         setProducts(response.data);
       } catch (error) {
         console.error("Erro ao buscar produtos:", error);
+      } finally {
+        setLoading(false); // Finaliza o loading
       }
     };
 
@@ -61,7 +71,6 @@ const RetiradasCadastradas = () => {
   const handleOpenEditModal = () => {
     if (selectedItems.length === 1) {
       const item = outputs.find((i) => i.id === selectedItems[0]);
-      console.log("Item para edição:", item);
       if (item) {
         setItemToEdit(item);
         setFormData(item, "retirada");
@@ -81,12 +90,15 @@ const RetiradasCadastradas = () => {
   };
 
   const handleTableUpdate = async () => {
+    setLoading(true); // Inicia o loading
     try {
       const response = await api.get("/retiradas");
       setOutputs(response.data);
       toast.info("Lista atualizada com sucesso!");
     } catch (error) {
       toast.error("Erro ao atualizar a lista.");
+    } finally {
+      setLoading(false); // Finaliza o loading
     }
   };
 
@@ -143,42 +155,53 @@ const RetiradasCadastradas = () => {
           </div>
         </Filters>
       </HeaderContainer>
-      <Table>
-        <Thead>
-          <tr>
-            <th className="checkbox"></th>
-            <th>Produto</th>
-            <th>Quantidade</th>
-            <th>Tipo de saída</th>
-            <th>Data de Retirada</th>
-            <th>Nº Lote</th>
-          </tr>
-        </Thead>
-        <Tbody>
-          {outputs.map((output, index) => (
-            <tr
-              key={index}
-              className={selectedItems.includes(output.id) ? "selected" : ""}
-            >
-              <td className="middle checkbox">
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(output.id)}
-                  onChange={() => handleCheckboxChange(output.id)}
-                />
-              </td>
-              <td>
-                {products.find((product) => product.id === output.produto_id)
-                  ?.nome || "Desconhecido"}
-              </td>
-              <td>{output.quantidade}</td>
-              <td>{output.tipo_retirada}</td>
-              <td>{formatCustomDate(output.data_retirada)}</td>
-              <td>{output.numero_lote}</td>
+
+      {loading ? (
+        // Exibe o loader enquanto os dados estão sendo carregados
+        <LoaderContainer>
+          <LoaderCenter>
+            <ClipLoader size={50} color={"#75A780"} loading={loading} />
+          </LoaderCenter>
+        </LoaderContainer>
+      ) : (
+        // Exibe a tabela quando os dados estiverem carregados
+        <Table>
+          <Thead>
+            <tr>
+              <th className="checkbox"></th>
+              <th>Produto</th>
+              <th>Quantidade</th>
+              <th>Tipo de saída</th>
+              <th>Data de Retirada</th>
+              <th>Nº Lote</th>
             </tr>
-          ))}
-        </Tbody>
-      </Table>
+          </Thead>
+          <Tbody>
+            {outputs.map((output, index) => (
+              <tr
+                key={index}
+                className={selectedItems.includes(output.id) ? "selected" : ""}
+              >
+                <td className="middle checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(output.id)}
+                    onChange={() => handleCheckboxChange(output.id)}
+                  />
+                </td>
+                <td>
+                  {products.find((product) => product.id === output.produto_id)
+                    ?.nome || "Desconhecido"}
+                </td>
+                <td>{output.quantidade}</td>
+                <td>{output.tipo_retirada}</td>
+                <td>{formatCustomDate(output.data_retirada)}</td>
+                <td>{output.numero_lote}</td>
+              </tr>
+            ))}
+          </Tbody>
+        </Table>
+      )}
 
       {openModal && (
         <Modal onConfirm={handleDelete} onCancel={handleCloseModal} />

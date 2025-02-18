@@ -7,16 +7,20 @@ import {
   Tbody,
   Thead,
   Title,
-} from "./Styles";
+  LoaderContainer,
+  LoaderCenter,
+} from "./Styles"; // Certifique-se de importar os novos estilos do loader
 import { ToastContainer, toast } from "react-toastify";
 import { Modal, ModalEditEntradas } from "../../components/Modal/Modal";
 import api from "../../services/api";
 import { formatCurrency, formatCustomDate } from "../../utils/functions";
 import { FormContext } from "../../contexts/FormContext";
+import { ClipLoader } from "react-spinners"; // Importando o loader
 
 const EntradasCadastradas = () => {
   const { setFormData } = useContext(FormContext);
   const [inputs, setInputs] = useState([]);
+  const [loading, setLoading] = useState(false); // Novo estado para controlar o carregamento
   const [openModal, setOpenModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -26,29 +30,38 @@ const EntradasCadastradas = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Inicia o loading
       try {
         const response = await api.get("/entradas");
         setInputs(response.data);
       } catch (error) {
         console.error("Erro ao buscar entradas:", error);
+      } finally {
+        setLoading(false); // Finaliza o loading
       }
     };
 
     const fetchProducts = async () => {
+      setLoading(true); // Inicia o loading
       try {
         const response = await api.get("/produtos");
         setProducts(response.data);
       } catch (error) {
         console.error("Erro ao buscar produtos:", error);
+      } finally {
+        setLoading(false); // Finaliza o loading
       }
     };
 
     const fetchSuppliers = async () => {
+      setLoading(true); // Inicia o loading
       try {
         const response = await api.get("/fornecedores");
         setSuppliers(response.data);
       } catch (error) {
         console.error("Erro ao buscar fornecedores:", error);
+      } finally {
+        setLoading(false); // Finaliza o loading
       }
     };
 
@@ -72,7 +85,6 @@ const EntradasCadastradas = () => {
   const handleOpenEditModal = () => {
     if (selectedItems.length === 1) {
       const item = inputs.find((i) => i.id === selectedItems[0]);
-      console.log("Item para edição:", item);
       if (item) {
         setItemToEdit(item);
         setFormData(item, "entrada"); // Passar o tipo de formulário corretamente
@@ -92,12 +104,15 @@ const EntradasCadastradas = () => {
   };
 
   const handleTableUpdate = async () => {
+    setLoading(true); // Inicia o loading
     try {
       const response = await api.get("/entradas");
       setInputs(response.data);
       toast.info("Lista atualizada com sucesso!");
     } catch (error) {
       toast.error("Erro ao atualizar a lista.");
+    } finally {
+      setLoading(false); // Finaliza o loading
     }
   };
 
@@ -151,57 +166,64 @@ const EntradasCadastradas = () => {
             <i className="bi bi-trash3" onClick={handleOpenModal}></i>
             <i
               className="bi bi-pencil-square"
-              onClick={() =>
-                handleOpenEditModal(
-                  selectedItems[0] // Assumindo que você só pode editar um item por vez
-                )
-              }
+              onClick={handleOpenEditModal}
             ></i>
           </div>
         </Filters>
       </HeaderContainer>
-      <Table>
-        <Thead>
-          <tr>
-            <th className="checkbox"></th>
-            <th>Produto</th>
-            <th>Quantidade</th>
-            <th>Fornecedor</th>
-            <th>Data de Entrada</th>
-            <th>Nº Lote</th>
-            <th>Custo</th>
-          </tr>
-        </Thead>
-        <Tbody>
-          {inputs.map((input, index) => (
-            <tr
-              key={index}
-              className={selectedItems.includes(input.id) ? "selected" : ""}
-            >
-              <td className="middle checkbox">
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(input.id)}
-                  onChange={() => handleCheckboxChange(input.id)}
-                />
-              </td>
-              <td>
-                {products.find((product) => product.id === input.produto_id)
-                  ?.nome || "Desconhecido"}
-              </td>
-              <td>{input.quantidade}</td>
-              <td>
-                {suppliers.find(
-                  (supplier) => supplier.id === input.fornecedor_id
-                )?.nome || "Desconhecido"}
-              </td>
-              <td>{formatCustomDate(input.data_entrada)}</td>
-              <td>{input.numero_lote}</td>
-              <td>{formatCurrency(input.preco_compra)}</td>
+
+      {loading ? (
+        // Exibe o loader enquanto os dados estão sendo carregados
+        <LoaderContainer>
+          <LoaderCenter>
+            <ClipLoader size={50} color={"#75A780"} loading={loading} />
+          </LoaderCenter>
+        </LoaderContainer>
+      ) : (
+        // Exibe a tabela quando os dados estiverem carregados
+        <Table>
+          <Thead>
+            <tr>
+              <th className="checkbox"></th>
+              <th>Produto</th>
+              <th>Quantidade</th>
+              <th>Fornecedor</th>
+              <th>Data de Entrada</th>
+              <th>Nº Lote</th>
+              <th>Custo</th>
             </tr>
-          ))}
-        </Tbody>
-      </Table>
+          </Thead>
+          <Tbody>
+            {inputs.map((input, index) => (
+              <tr
+                key={index}
+                className={selectedItems.includes(input.id) ? "selected" : ""}
+              >
+                <td className="middle checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(input.id)}
+                    onChange={() => handleCheckboxChange(input.id)}
+                  />
+                </td>
+                <td>
+                  {products.find((product) => product.id === input.produto_id)
+                    ?.nome || "Desconhecido"}
+                </td>
+                <td>{input.quantidade}</td>
+                <td>
+                  {suppliers.find(
+                    (supplier) => supplier.id === input.fornecedor_id
+                  )?.nome || "Desconhecido"}
+                </td>
+                <td>{formatCustomDate(input.data_entrada)}</td>
+                <td>{input.numero_lote}</td>
+                <td>{formatCurrency(input.preco_compra)}</td>
+              </tr>
+            ))}
+          </Tbody>
+        </Table>
+      )}
 
       {openModal && (
         <Modal onConfirm={handleDelete} onCancel={handleCloseModal} />

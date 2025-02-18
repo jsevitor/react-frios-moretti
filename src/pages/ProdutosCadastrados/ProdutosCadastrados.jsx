@@ -7,15 +7,19 @@ import {
   Tbody,
   Thead,
   Title,
+  LoaderContainer,
+  LoaderCenter,
 } from "./Styles";
 import { ToastContainer, toast } from "react-toastify";
 import { Modal, ModalEditProdutos } from "../../components/Modal/Modal";
 import api from "../../services/api";
 import { FormContext } from "../../contexts/FormContext";
+import { ClipLoader } from "react-spinners";
 
 const ProdutosCadastrados = () => {
   const { setFormData } = useContext(FormContext);
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -24,20 +28,26 @@ const ProdutosCadastrados = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Inicia o loading
       try {
         const response = await api.get("/produtos");
         setProducts(response.data);
       } catch (error) {
         console.error("Erro ao buscar produtos:", error);
+      } finally {
+        setLoading(false); // Finaliza o loading
       }
     };
 
     const fetchSuppliers = async () => {
+      setLoading(true); // Inicia o loading
       try {
         const response = await api.get("/fornecedores");
         setSuppliers(response.data);
       } catch (error) {
         console.error("Erro ao buscar fornecedores:", error);
+      } finally {
+        setLoading(false); // Finaliza o loading
       }
     };
 
@@ -79,12 +89,15 @@ const ProdutosCadastrados = () => {
   };
 
   const handleTableUpdate = async () => {
+    setLoading(true); // Inicia o loading
     try {
       const response = await api.get("/produtos");
       setProducts(response.data);
       toast.info("Lista atualizada com sucesso!");
     } catch (error) {
       toast.error("Erro ao atualizar a lista.");
+    } finally {
+      setLoading(false); // Finaliza o loading
     }
   };
 
@@ -142,55 +155,66 @@ const ProdutosCadastrados = () => {
           </div>
         </Filters>
       </HeaderContainer>
-      <Table>
-        <Thead>
-          <tr>
-            <th className="checkbox"></th>
-            <th className="middle">Foto</th>
-            <th>Nome</th>
-            <th>Categoria</th>
-            <th>Fornecedor</th>
-            <th>Marca</th>
-          </tr>
-        </Thead>
-        <Tbody>
-          {products.map((product, index) => (
-            <tr
-              key={index}
-              className={selectedItems.includes(product.id) ? "selected" : ""}
-            >
-              <td className="middle checkbox">
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(product.id)}
-                  onChange={() => handleCheckboxChange(product.id)}
-                />
-              </td>
-              <td className="middle">
-                <img
-                  src={
-                    product.picture
-                      ? product.picture
-                      : "https://st2.depositphotos.com/1561359/12101/v/380/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg"
-                  }
-                  alt={product.nome}
-                />
-              </td>
-              <td>{product.nome}</td>
-              <td>{product.categoria}</td>
-              <td>
-                {
-                  // Verificação condicional para obter o nome do fornecedor
-                  suppliers.find(
-                    (supplier) => supplier.id === product.fornecedor_id
-                  )?.nome || "Desconhecido"
-                }
-              </td>
-              <td>{product.marca}</td>
+
+      {loading ? (
+        // Exibe o loader enquanto os dados estão sendo carregados
+        <LoaderContainer>
+          <LoaderCenter>
+            <ClipLoader size={50} color={"#75A780"} loading={loading} />
+          </LoaderCenter>
+        </LoaderContainer>
+      ) : (
+        // Exibe a tabela quando os dados estiverem carregados
+        <Table>
+          <Thead>
+            <tr>
+              <th className="checkbox"></th>
+              <th className="middle">Foto</th>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Fornecedor</th>
+              <th>Marca</th>
             </tr>
-          ))}
-        </Tbody>
-      </Table>
+          </Thead>
+          <Tbody>
+            {products.map((product, index) => (
+              <tr
+                key={index}
+                className={selectedItems.includes(product.id) ? "selected" : ""}
+              >
+                <td className="middle checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(product.id)}
+                    onChange={() => handleCheckboxChange(product.id)}
+                  />
+                </td>
+                <td className="middle">
+                  <img
+                    src={
+                      product.picture
+                        ? product.picture
+                        : "https://st2.depositphotos.com/1561359/12101/v/380/depositphotos_121012076-stock-illustration-blank-photo-icon.jpg"
+                    }
+                    alt={product.nome}
+                  />
+                </td>
+                <td>{product.nome}</td>
+                <td>{product.categoria}</td>
+                <td>
+                  {
+                    // Verificação condicional para obter o nome do fornecedor
+                    suppliers.find(
+                      (supplier) => supplier.id === product.fornecedor_id
+                    )?.nome || "Desconhecido"
+                  }
+                </td>
+                <td>{product.marca}</td>
+              </tr>
+            ))}
+          </Tbody>
+        </Table>
+      )}
 
       {openModal && (
         <Modal onConfirm={handleDelete} onCancel={handleCloseModal} />

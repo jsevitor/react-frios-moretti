@@ -5,7 +5,6 @@ export const Container = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  /* align-items: center; */
   overflow-x: auto;
   overflow-y: auto;
 
@@ -133,4 +132,17 @@ export const Tbody = styled.tbody`
     background-color: ${colors.selected};
     color: ${colors.white};
   }
+`;
+
+export const LoaderContainer = styled.div`
+  position: relative;
+  width: 100%;
+  min-height: 50vh;
+`;
+
+export const LoaderCenter = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 `;

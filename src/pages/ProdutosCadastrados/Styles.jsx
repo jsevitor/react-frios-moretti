@@ -134,3 +134,16 @@ export const Tbody = styled.tbody`
     color: ${colors.white};
   }
 `;
+
+export const LoaderContainer = styled.div`
+  position: relative;
+  width: 100%;
+  min-height: 50vh;
+`;
+
+export const LoaderCenter = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+`;
