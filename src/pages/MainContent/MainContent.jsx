@@ -4,17 +4,18 @@ import { Container } from "./Styles";
 
 /**
  * Componente principal que envolve as rotas da aplicação dentro do FormProvider.
+ *
  * @component MainContent
- * @param {boolean} menuCollapsed - Indica se o menu está colapsado ou não.
+ * @param {Object} props - Propriedades do componente.
+ * @param {boolean} props.menuCollapsed - Indica se o menu está colapsado.
+ * @returns {JSX.Element} o elemento MainContent.
  * @example
- * return (
- *   <MainContent menuCollapsed={false} />
- * )
+ * <MainContent menuCollapsed={false} />
  */
 const MainContent = ({ menuCollapsed }) => {
   return (
     <Container collapsed={menuCollapsed}>
-      {/* Provê o contexto de formulário para todas as rotas */}
+      {/* Provedor de contexto para formulários */}
       <FormProvider>
         <Routes />
       </FormProvider>

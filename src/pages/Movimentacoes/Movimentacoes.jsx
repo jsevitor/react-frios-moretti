@@ -12,9 +12,19 @@ import {
 } from "./Styles";
 import { ToastContainer, toast } from "react-toastify";
 import { formatCustomDate } from "../../utils/functions";
+import { ClipLoader } from "react-spinners";
 import api from "../../services/api";
-import { ClipLoader } from "react-spinners"; // Loader spinner
 
+/**
+ * Componente Movimentações
+ * Este componente permite visualizar as datas de entrada e retirada, além das quantidades movimentadas.
+ *
+ * @component Movimentacoes
+ * @returns {JSX.Element} O elemento Movimentacoes.
+ * @example
+ * // Uso do componente
+ *   <Movimentacoes />
+ */
 const Movimentacoes = () => {
   const [movimentacoes, setMovimentacoes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,9 +35,8 @@ const Movimentacoes = () => {
       try {
         const response = await api.get("/movimentacoes");
         setMovimentacoes(response.data);
-        console.log(response.data);
       } catch (error) {
-        console.error("Erro ao buscar:", error);
+        console.error("Erro ao buscar movimentações:", error);
       } finally {
         setLoading(false);
       }
@@ -36,6 +45,7 @@ const Movimentacoes = () => {
     fetchData();
   }, []);
 
+  // Atualiza a tabela com as movimentações mais recentes.
   const handleTableUpdate = async () => {
     setLoading(true);
     try {
@@ -85,14 +95,14 @@ const Movimentacoes = () => {
                 <tr key={index}>
                   <td>{item.nome}</td>
                   <td>
-                    {(item.data_entrada &&
-                      formatCustomDate(item.data_entrada)) ||
-                      ""}
+                    {item.data_entrada
+                      ? formatCustomDate(item.data_entrada)
+                      : "-"}
                   </td>
                   <td>
-                    {(item.data_retirada &&
-                      formatCustomDate(item.data_retirada)) ||
-                      ""}
+                    {item.data_retirada
+                      ? formatCustomDate(item.data_retirada)
+                      : "-"}
                   </td>
                   <td>{item.quantidade_total_entrada}</td>
                   <td>{item.quantidade_total_saida}</td>

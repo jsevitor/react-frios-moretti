@@ -11,19 +11,24 @@ import {
   LoaderCenter,
 } from "./Styles";
 import { ToastContainer, toast } from "react-toastify";
-import {
-  Modal,
-  ModalEditEntradas,
-  ModalEditFornecedores,
-} from "../../components/Modal/Modal";
-import api from "../../services/api";
-import { formatCurrency, formatDate } from "../../utils/functions";
+import { Modal, ModalEditFornecedores } from "../../components/Modal/Modal";
 import { FormContext } from "../../contexts/FormContext";
 import { ClipLoader } from "react-spinners";
+import api from "../../services/api";
+
+/**
+ * Componente para exibir a lista de fornecedores cadastrados.
+ * Este componente permite visualizar os dados de todos os fornecedores no sistema.
+ *
+ * @component FornecedoresCadastrados
+ @returns {JSX.Element} O elemento FornecedoresCadastrados.
+ * @example
+ * // Uso do componente
+ *   <FornecedoresCadastrados />
+ */
 
 const FornecedoresCadastrados = () => {
   const { setFormData } = useContext(FormContext);
-
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -32,21 +37,22 @@ const FornecedoresCadastrados = () => {
   const [itemToEdit, setItemToEdit] = useState(null);
 
   useEffect(() => {
+    // Busca os fornecedores cadastrados na API.
     const fetchData = async () => {
-      setLoading(true); // Inicia o loading
+      setLoading(true);
       try {
         const response = await api.get("/fornecedores");
         setSuppliers(response.data);
       } catch (error) {
         console.error("Erro ao buscar fornecedor:", error);
       } finally {
-        setLoading(false); // Finaliza o loading
+        setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
+  // Abre o modal de exclusão se houver itens selecionados.
   const handleOpenModal = () => {
     if (selectedItems.length > 0) {
       setOpenModal(true);
@@ -55,34 +61,37 @@ const FornecedoresCadastrados = () => {
     }
   };
 
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
+  // Fecha o modal de exclusão.
+  const handleCloseModal = () => setOpenModal(false);
 
+  // Abre o modal de edição se apenas um item estiver selecionado.
   const handleOpenEditModal = () => {
     if (selectedItems.length === 1) {
       const item = suppliers.find((i) => i.id === selectedItems[0]);
-      console.log("Item para edição:", item);
       if (item) {
         setItemToEdit(item);
         setFormData(item, "fornecedor");
         setOpenEditModal(true);
       }
-    } else if (selectedItems.length === 0) {
-      toast.warning("Selecione um item para editar.");
     } else {
-      toast.warning("Selecione apenas um item para editar.");
+      toast.warning(
+        selectedItems.length === 0
+          ? "Selecione um item para editar."
+          : "Selecione apenas um item para editar."
+      );
     }
   };
 
+  // Fecha o modal de edição e atualiza a tabela.
   const handleCloseEditModal = () => {
     setOpenEditModal(false);
     setItemToEdit(null);
     handleTableUpdate();
   };
 
+  // Atualiza a lista de fornecedores consultando a API.
   const handleTableUpdate = async () => {
-    setLoading(true); // Inicia o loading
+    setLoading(true);
     try {
       const response = await api.get("/fornecedores");
       setSuppliers(response.data);
@@ -90,10 +99,14 @@ const FornecedoresCadastrados = () => {
     } catch (error) {
       toast.error("Erro ao atualizar a lista.");
     } finally {
-      setLoading(false); // Finaliza o loading
+      setLoading(false);
     }
   };
 
+  /**
+   * Gerencia a seleção de itens na tabela.
+   * @param {number} itemId - ID do item selecionado.
+   */
   const handleCheckboxChange = (itemId) => {
     setSelectedItems((prevSelected) =>
       prevSelected.includes(itemId)
@@ -102,23 +115,21 @@ const FornecedoresCadastrados = () => {
     );
   };
 
+  // Deleta os itens selecionados chamando a API.
   const handleDelete = async () => {
     try {
-      // Deletar os itens selecionados
       await Promise.all(
         selectedItems.map((id) => api.delete(`/fornecedores/${id}`))
       );
-
-      // Atualizar a lista de fornecedores após a exclusão
-      const response = await api.get("/fornecedores");
-      setSuppliers(response.data);
-
+      setSuppliers(
+        suppliers.filter((supplier) => !selectedItems.includes(supplier.id))
+      );
       toast.success("Itens deletados com sucesso!");
     } catch (error) {
       toast.error("Erro ao deletar itens.");
     } finally {
       handleCloseModal();
-      setSelectedItems([]); // Limpa os itens selecionados após a exclusão
+      setSelectedItems([]);
     }
   };
 
@@ -145,21 +156,19 @@ const FornecedoresCadastrados = () => {
             <i className="bi bi-trash3" onClick={handleOpenModal}></i>
             <i
               className="bi bi-pencil-square"
-              onClick={() => handleOpenEditModal(selectedItems[0])}
+              onClick={handleOpenEditModal}
             ></i>
           </div>
         </Filters>
       </HeaderContainer>
 
       {loading ? (
-        // Exibe o loader enquanto os dados estão carregando
         <LoaderContainer>
           <LoaderCenter>
             <ClipLoader size={50} color={"#75A780"} loading={loading} />
           </LoaderCenter>
         </LoaderContainer>
       ) : (
-        // Exibe a tabela quando os dados estão carregados
         <Table>
           <Thead>
             <tr>
@@ -175,9 +184,9 @@ const FornecedoresCadastrados = () => {
             </tr>
           </Thead>
           <Tbody>
-            {suppliers.map((supplier, index) => (
+            {suppliers.map((supplier) => (
               <tr
-                key={index}
+                key={supplier.id}
                 className={
                   selectedItems.includes(supplier.id) ? "selected" : ""
                 }
@@ -206,7 +215,6 @@ const FornecedoresCadastrados = () => {
       {openModal && (
         <Modal onConfirm={handleDelete} onCancel={handleCloseModal} />
       )}
-
       {openEditModal && itemToEdit && (
         <ModalEditFornecedores
           item={itemToEdit}

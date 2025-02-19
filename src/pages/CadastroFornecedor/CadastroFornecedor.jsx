@@ -2,13 +2,22 @@ import { useContext, useEffect, useState } from "react";
 import { ButtonContainer, FormContainer } from "./Styles";
 import { ToastContainer, toast } from "react-toastify";
 import { FormContext } from "../../contexts/FormContext";
+import { InputField, SelectField } from "../../components/Form/Form";
 import Card from "../../components/Card/Card";
 import Button from "../../components/Button/Button";
-import { InputField, SelectField } from "../../components/Form/Form";
 import api from "../../services/api";
-
 import "react-toastify/dist/ReactToastify.min.css";
 
+/**
+ * Componente para cadastro de fornecedores.
+ * Este componente permite adicionar ou editar fornecedores no sistema.
+ *
+ * @component CadastroFornecedor
+ * @returns {JSX.Element} O elemento CadastroFornecedor.
+ * @example
+ * // Uso do componente
+ *   <CadastroFornecedor />
+ */
 const CadastroFornecedor = () => {
   const { fornecedorData, handleChange, handleCancel } =
     useContext(FormContext);
@@ -20,50 +29,40 @@ const CadastroFornecedor = () => {
     handleCancel();
   }, []);
 
+  /**
+   * Valida os campos obrigatórios do formulário.
+   * @returns {boolean} True se todos os campos obrigatórios estiverem preenchidos, caso contrário, false.
+   */
   const validateFields = () => {
     let validationErrors = {};
+    const requiredFields = [
+      "nome",
+      "cnpj",
+      "celular",
+      "email",
+      "cep",
+      "endereco",
+      "bairro",
+      "cidade",
+      "estado",
+    ];
 
-    if (!fornecedorData.nome) {
-      validationErrors.nome = "O campo Nome é obrigatório.";
-    }
-
-    if (!fornecedorData.cnpj) {
-      validationErrors.cnpj = "O campo CNPJ é obrigatório.";
-    }
-
-    if (!fornecedorData.celular) {
-      validationErrors.celular = "O campo Celular é obrigatório.";
-    }
-
-    if (!fornecedorData.email) {
-      validationErrors.email = "O campo E-mail é obrigatório.";
-    }
-
-    if (!fornecedorData.cep) {
-      validationErrors.cep = "O campo CEP é obrigatório.";
-    }
-
-    if (!fornecedorData.endereco) {
-      validationErrors.endereco = "O campo Endereço é obrigatório.";
-    }
-
-    if (!fornecedorData.bairro) {
-      validationErrors.bairro = "O campo Bairro é obrigatório.";
-    }
-
-    if (!fornecedorData.cidade) {
-      validationErrors.cidade = "O campo Cidade é obrigatório.";
-    }
-
-    if (!fornecedorData.estado) {
-      validationErrors.estado = "O campo Estado é obrigatório.";
-    }
+    requiredFields.forEach((field) => {
+      if (!fornecedorData[field]) {
+        validationErrors[field] = `O campo ${
+          field.charAt(0).toUpperCase() + field.slice(1)
+        } é obrigatório.`;
+      }
+    });
 
     setErrors(validationErrors);
-
     return Object.keys(validationErrors).length === 0;
   };
 
+  /**
+   * Manipula a alteração dos campos do formulário.
+   * @param {Event} e - Evento de mudança do input.
+   */
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     handleChange(e, "fornecedor");
@@ -73,10 +72,13 @@ const CadastroFornecedor = () => {
     }));
   };
 
+  // Reseta o formulário e os erros.
   const handleReset = () => {
     handleCancel();
     setErrors({});
   };
+
+  // Submete o formulário após validação.
 
   const handleSubmit = async () => {
     if (!validateFields()) {
@@ -86,14 +88,10 @@ const CadastroFornecedor = () => {
 
     setIsSubmitting(true);
     try {
-      // Enviar uma requisição POST para criar um novo item
-      const response = await api.post("/fornecedores", fornecedorData);
-      console.log("Fornecedor adicionado:", response.data);
+      await api.post("/fornecedores", fornecedorData);
       toast.success("Fornecedor cadastrado com sucesso!");
-
       handleCancel();
     } catch (error) {
-      console.error("Erro ao adicionar fornecedor:", error);
       toast.error("Erro ao adicionar fornecedor.");
     } finally {
       setIsSubmitting(false);
@@ -104,7 +102,7 @@ const CadastroFornecedor = () => {
     <Card title={"Cadastro de Fornecedor"} icon={"bi bi-truck"}>
       <ToastContainer />
       <FormContainer>
-        {/* Componentes de entrada para cada campo do formulário */}
+        {/* Campos do formulário */}
         <InputField
           label={"Nome"}
           name={"nome"}

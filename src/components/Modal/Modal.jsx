@@ -11,6 +11,19 @@ import { InputField, SelectField } from "../Form/Form";
 import Button from "../Button/Button";
 import api from "../../services/api";
 
+/**
+ * Componente de modal genérico para confirmação de ações.
+ * Este modal exibe uma mensagem de confirmação e dois botões: "Confirmar" e "Cancelar".
+ *
+ * @component Modal
+ * @param {Function} onConfirm - Função chamada ao confirmar a ação.
+ * @param {Function} onCancel - Função chamada ao cancelar a ação.
+ * @returns {JSX.Element} O elemento Modal.
+ *
+ * @example
+ * // Uso do Modal
+ * <Modal onConfirm={() => console.log("Confirmado")} onCancel={() => console.log("Cancelado")} />
+ */
 const Modal = ({ onConfirm, onCancel }) => {
   return (
     <Container>
@@ -27,7 +40,20 @@ const Modal = ({ onConfirm, onCancel }) => {
   );
 };
 
-/* MODAL DE EDIÇÃO ENTRADAS */
+/**
+ * Componente de modal para edição de entradas.
+ *
+ * Este modal permite editar informações de entradas, como produto, quantidade, fornecedor, etc.
+ *
+ * @component
+ * @param {Object} item - O item a ser editado.
+ * @param {Function} onClose - Função chamada para fechar o modal.
+ * @returns {JSX.Element} O elemento ModalEditEntradas.
+ *
+ * @example
+ * // Uso do ModalEditEntradas
+ * <ModalEditEntradas item={entradaItem} onClose={() => setModalOpen(false)} />
+ */
 const ModalEditEntradas = ({ item, onClose }) => {
   const { entradaData, handleChange } = useContext(FormContext);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,6 +61,7 @@ const ModalEditEntradas = ({ item, onClose }) => {
   const [products, setProducts] = useState([]);
   const [errors, setErrors] = useState({});
 
+  // Busca produtos e fornecedores ao montar o componente
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -58,6 +85,7 @@ const ModalEditEntradas = ({ item, onClose }) => {
     fetchSuppliers();
   }, []);
 
+  // Atualiza o estado do formulário ao alterar campos
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     handleChange(e, "entrada");
@@ -67,14 +95,15 @@ const ModalEditEntradas = ({ item, onClose }) => {
     }));
   };
 
+  // Valida os campos do formulário (implementar regras de validação)
   const validateFields = () => {
-    // Função de validação de campos (adicionar suas regras de validação aqui)
     return true;
   };
 
+  // Envia os dados atualizados para a API
   const handleSubmit = async () => {
     if (!validateFields()) {
-      toas;
+      toast.error("Preencha todos os campos obrigatórios.");
       return;
     }
 
@@ -114,12 +143,6 @@ const ModalEditEntradas = ({ item, onClose }) => {
               </option>
             ))}
           </SelectField>
-          {/* <InputField
-            label={"Produto"}
-            name={"produto_id"}
-            value={entradaData.produto_id || ""}
-            onChange={handleFieldChange}
-          /> */}
           <InputField
             label={"Quantidade"}
             name={"quantidade"}
@@ -179,13 +202,27 @@ const ModalEditEntradas = ({ item, onClose }) => {
   );
 };
 
-/* MODAL DE EDIÇÃO PRODUTOS */
+/**
+ * Componente de modal para edição de produtos.
+ *
+ * Este modal permite editar informações de produtos, como nome, categoria, fornecedor, etc.
+ *
+ * @component
+ * @param {Object} item - O item a ser editado.
+ * @param {Function} onClose - Função chamada para fechar o modal.
+ * @returns {JSX.Element} O elemento ModalEditProdutos.
+ *
+ * @example
+ * // Uso do ModalEditProdutos
+ * <ModalEditProdutos item={produtoItem} onClose={() => setModalOpen(false)} />
+ */
 const ModalEditProdutos = ({ item, onClose }) => {
   const { produtoData, handleChange } = useContext(FormContext);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [suppliers, setSuppliers] = useState([]);
   const [errors, setErrors] = useState({});
 
+  // Busca fornecedores ao montar o componente
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -200,6 +237,7 @@ const ModalEditProdutos = ({ item, onClose }) => {
     fetchData();
   }, []);
 
+  // Atualiza o estado do formulário ao alterar campos
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     handleChange(e, "produto");
@@ -209,6 +247,7 @@ const ModalEditProdutos = ({ item, onClose }) => {
     }));
   };
 
+  // Envia os dados atualizados para a API
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -290,13 +329,27 @@ const ModalEditProdutos = ({ item, onClose }) => {
   );
 };
 
-/* MODAL DE EDIÇÃO RETIRADAS */
+/**
+ * Componente de modal para edição de retiradas.
+ *
+ * Este modal permite editar informações de retiradas, como produto, quantidade, tipo de saída, etc.
+ *
+ * @component
+ * @param {Object} item - O item a ser editado.
+ * @param {Function} onClose - Função chamada para fechar o modal.
+ * @returns {JSX.Element} O elemento ModalEditRetiradas.
+ *
+ * @example
+ * // Uso do ModalEditRetiradas
+ * <ModalEditRetiradas item={retiradaItem} onClose={() => setModalOpen(false)} />
+ */
 const ModalEditRetiradas = ({ item, onClose }) => {
   const { retiradaData, handleChange } = useContext(FormContext);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [products, setProducts] = useState([]);
 
+  // Busca produtos ao montar o componente
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -310,6 +363,7 @@ const ModalEditRetiradas = ({ item, onClose }) => {
     fetchProducts();
   }, []);
 
+  // Atualiza o estado do formulário ao alterar campos
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     handleChange(e, "retirada");
@@ -319,13 +373,15 @@ const ModalEditRetiradas = ({ item, onClose }) => {
     }));
   };
 
+  // Valida os campos do formulário (implementar regras de validação)
   const validateFields = () => {
     return true;
   };
 
+  // Envia os dados atualizados para a API
   const handleSubmit = async () => {
     if (!validateFields()) {
-      toas;
+      toast.error("Preencha todos os campos obrigatórios.");
       return;
     }
 
@@ -408,13 +464,26 @@ const ModalEditRetiradas = ({ item, onClose }) => {
   );
 };
 
-/* MODAL DE EDIÇÃO ENTRADAS */
+/**
+ * Componente de modal para edição de fornecedores.
+ *
+ * Este modal permite editar informações de fornecedores, como nome, CNPJ, telefone, etc.
+ *
+ * @component
+ * @param {Object} item - O item a ser editado.
+ * @param {Function} onClose - Função chamada para fechar o modal.
+ * @returns {JSX.Element} O elemento ModalEditFornecedores.
+ *
+ * @example
+ * // Uso do ModalEditFornecedores
+ * <ModalEditFornecedores item={fornecedorItem} onClose={() => setModalOpen(false)} />
+ */
 const ModalEditFornecedores = ({ item, onClose }) => {
   const { fornecedorData, handleChange } = useContext(FormContext);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [suppliers, setSuppliers] = useState([]);
   const [errors, setErrors] = useState({});
 
+  // Atualiza o estado do formulário ao alterar campos
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     handleChange(e, "fornecedor");
@@ -424,6 +493,7 @@ const ModalEditFornecedores = ({ item, onClose }) => {
     }));
   };
 
+  // Envia os dados atualizados para a API
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {

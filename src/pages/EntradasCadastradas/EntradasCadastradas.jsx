@@ -9,18 +9,29 @@ import {
   Title,
   LoaderContainer,
   LoaderCenter,
-} from "./Styles"; // Certifique-se de importar os novos estilos do loader
+} from "./Styles";
 import { ToastContainer, toast } from "react-toastify";
 import { Modal, ModalEditEntradas } from "../../components/Modal/Modal";
-import api from "../../services/api";
 import { formatCurrency, formatCustomDate } from "../../utils/functions";
 import { FormContext } from "../../contexts/FormContext";
-import { ClipLoader } from "react-spinners"; // Importando o loader
+import { ClipLoader } from "react-spinners";
+import api from "../../services/api";
+
+/**
+ * Componente para exibição e gerenciamento de entradas cadastradas.
+ * Este componente permite visualizar, editar e excluir entradas no sistema.
+ *
+ * @component EntradasCadastradas
+ * @returns {JSX.Element} O elemento EntradasCadastradas.
+ * @example
+ * // Uso do componente
+ *   <EntradasCadastradas />
+ */
 
 const EntradasCadastradas = () => {
   const { setFormData } = useContext(FormContext);
   const [inputs, setInputs] = useState([]);
-  const [loading, setLoading] = useState(false); // Novo estado para controlar o carregamento
+  const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -29,117 +40,50 @@ const EntradasCadastradas = () => {
   const [suppliers, setSuppliers] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true); // Inicia o loading
+    // Função para buscar dados de entradas, produtos e fornecedores
+    const fetchData = async (endpoint, setter) => {
+      setLoading(true);
       try {
-        const response = await api.get("/entradas");
-        setInputs(response.data);
+        const response = await api.get(endpoint);
+        setter(response.data);
       } catch (error) {
-        console.error("Erro ao buscar entradas:", error);
+        console.error(`Erro ao buscar dados de ${endpoint}:`, error);
       } finally {
-        setLoading(false); // Finaliza o loading
+        setLoading(false);
       }
     };
 
-    const fetchProducts = async () => {
-      setLoading(true); // Inicia o loading
-      try {
-        const response = await api.get("/produtos");
-        setProducts(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar produtos:", error);
-      } finally {
-        setLoading(false); // Finaliza o loading
-      }
-    };
-
-    const fetchSuppliers = async () => {
-      setLoading(true); // Inicia o loading
-      try {
-        const response = await api.get("/fornecedores");
-        setSuppliers(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar fornecedores:", error);
-      } finally {
-        setLoading(false); // Finaliza o loading
-      }
-    };
-
-    fetchData();
-    fetchProducts();
-    fetchSuppliers();
+    fetchData("/entradas", setInputs);
+    fetchData("/produtos", setProducts);
+    fetchData("/fornecedores", setSuppliers);
   }, []);
 
-  const handleOpenModal = () => {
-    if (selectedItems.length > 0) {
-      setOpenModal(true);
-    } else {
-      toast.warning("Selecione pelo menos um item para excluir.");
-    }
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
-
+  // Abre o modal de edição de entrada
   const handleOpenEditModal = () => {
     if (selectedItems.length === 1) {
       const item = inputs.find((i) => i.id === selectedItems[0]);
       if (item) {
         setItemToEdit(item);
-        setFormData(item, "entrada"); // Passar o tipo de formulário corretamente
+        setFormData(item, "entrada");
         setOpenEditModal(true);
       }
-    } else if (selectedItems.length === 0) {
-      toast.warning("Selecione um item para editar.");
     } else {
       toast.warning("Selecione apenas um item para editar.");
     }
   };
 
-  const handleCloseEditModal = () => {
-    setOpenEditModal(false);
-    setItemToEdit(null);
-    handleTableUpdate();
-  };
-
-  const handleTableUpdate = async () => {
-    setLoading(true); // Inicia o loading
-    try {
-      const response = await api.get("/entradas");
-      setInputs(response.data);
-      toast.info("Lista atualizada com sucesso!");
-    } catch (error) {
-      toast.error("Erro ao atualizar a lista.");
-    } finally {
-      setLoading(false); // Finaliza o loading
-    }
-  };
-
-  const handleCheckboxChange = (itemId) => {
-    setSelectedItems((prevSelected) =>
-      prevSelected.includes(itemId)
-        ? prevSelected.filter((id) => id !== itemId)
-        : [...prevSelected, itemId]
-    );
-  };
-
+  // Deleta itens selecionados
   const handleDelete = async () => {
     try {
-      // Deletar os itens selecionados
       await Promise.all(
         selectedItems.map((id) => api.delete(`/entradas/${id}`))
       );
-
-      // Atualizar a lista de entradas após a exclusão
-      const response = await api.get("/entradas");
-      setInputs(response.data);
-
+      setInputs(inputs.filter((input) => !selectedItems.includes(input.id)));
       toast.success("Itens deletados com sucesso!");
     } catch (error) {
       toast.error("Erro ao deletar itens.");
     } finally {
-      handleCloseModal();
+      setOpenModal(false);
     }
   };
 
@@ -159,11 +103,7 @@ const EntradasCadastradas = () => {
                 )
               }
             />
-            <i
-              className="bi bi-arrow-clockwise"
-              onClick={handleTableUpdate}
-            ></i>
-            <i className="bi bi-trash3" onClick={handleOpenModal}></i>
+            <i className="bi bi-trash3" onClick={() => setOpenModal(true)}></i>
             <i
               className="bi bi-pencil-square"
               onClick={handleOpenEditModal}
@@ -173,14 +113,12 @@ const EntradasCadastradas = () => {
       </HeaderContainer>
 
       {loading ? (
-        // Exibe o loader enquanto os dados estão sendo carregados
         <LoaderContainer>
           <LoaderCenter>
             <ClipLoader size={50} color={"#75A780"} loading={loading} />
           </LoaderCenter>
         </LoaderContainer>
       ) : (
-        // Exibe a tabela quando os dados estiverem carregados
         <Table>
           <Thead>
             <tr>
@@ -203,18 +141,23 @@ const EntradasCadastradas = () => {
                   <input
                     type="checkbox"
                     checked={selectedItems.includes(input.id)}
-                    onChange={() => handleCheckboxChange(input.id)}
+                    onChange={() =>
+                      setSelectedItems((prev) =>
+                        prev.includes(input.id)
+                          ? prev.filter((id) => id !== input.id)
+                          : [...prev, input.id]
+                      )
+                    }
                   />
                 </td>
                 <td>
-                  {products.find((product) => product.id === input.produto_id)
-                    ?.nome || "Desconhecido"}
+                  {products.find((p) => p.id === input.produto_id)?.nome ||
+                    "Desconhecido"}
                 </td>
                 <td>{input.quantidade}</td>
                 <td>
-                  {suppliers.find(
-                    (supplier) => supplier.id === input.fornecedor_id
-                  )?.nome || "Desconhecido"}
+                  {suppliers.find((s) => s.id === input.fornecedor_id)?.nome ||
+                    "Desconhecido"}
                 </td>
                 <td>{formatCustomDate(input.data_entrada)}</td>
                 <td>{input.numero_lote}</td>
@@ -226,11 +169,13 @@ const EntradasCadastradas = () => {
       )}
 
       {openModal && (
-        <Modal onConfirm={handleDelete} onCancel={handleCloseModal} />
+        <Modal onConfirm={handleDelete} onCancel={() => setOpenModal(false)} />
       )}
-
       {openEditModal && itemToEdit && (
-        <ModalEditEntradas item={itemToEdit} onClose={handleCloseEditModal} />
+        <ModalEditEntradas
+          item={itemToEdit}
+          onClose={() => setOpenEditModal(false)}
+        />
       )}
     </Container>
   );

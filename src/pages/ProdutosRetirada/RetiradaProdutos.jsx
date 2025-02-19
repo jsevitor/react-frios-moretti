@@ -7,11 +7,20 @@ import Card from "../../components/Card/Card";
 import Button from "../../components/Button/Button";
 import api from "../../services/api";
 
+/**
+ * Componente para registrar a retirada de produtos.
+ * Permite cadastrar a retirada de produtos, validando os campos obrigatórios
+ * e enviando os dados para a API.
+ *
+ * @component RetiradaProdutos
+ * @returns {JSX.Element} O elemento RetiradaProdutos.
+ * @example
+ * // Uso do componente
+ *   <RetiradaProdutos />
+ */
 const RetiradaProdutos = () => {
   const { retiradaData, handleChange, handleCancel } = useContext(FormContext);
   const [products, setProducts] = useState([]);
-  const [suppliers, setSuppliers] = useState([]);
-  const [inputs, setInputs] = useState([]);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -26,115 +35,57 @@ const RetiradaProdutos = () => {
       }
     };
 
-    const fetchSuppliers = async () => {
-      try {
-        const response = await api.get("/fornecedores");
-        setSuppliers(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar fornecedores:", error);
-      }
-    };
-
-    const fetchInputs = async () => {
-      try {
-        const response = await api.get("/entradas");
-        setInputs(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar entradas:", error);
-      }
-    };
-
     fetchProducts();
-    fetchSuppliers();
-    fetchInputs();
   }, []);
 
+  /**
+   * Valida os campos obrigatórios do formulário.
+   * @returns {boolean} Retorna true se todos os campos obrigatórios forem preenchidos.
+   */
   const validateFields = () => {
     let validationErrors = {};
 
     if (!retiradaData.produto_id) {
       validationErrors.produto_id = "O campo Produto é obrigatório.";
     }
-
     if (!retiradaData.quantidade) {
       validationErrors.quantidade = "O campo Quantidade é obrigatório.";
     }
-
     if (!retiradaData.tipo_retirada) {
       validationErrors.tipo_retirada = "O campo Tipo de Saída é obrigatório.";
     }
-
     if (!retiradaData.data_retirada) {
       validationErrors.data_retirada =
         "O campo Data de Retirada é obrigatório.";
     }
-
     if (!retiradaData.numero_lote) {
       validationErrors.numero_lote = "O campo Número de Lote é obrigatório.";
     }
 
     setErrors(validationErrors);
-
     return Object.keys(validationErrors).length === 0;
   };
 
-  // const handleFieldChange = (e) => {
-  //   const { name, value } = e.target;
-  //   handleChange(e, "retirada");
-  //   setErrors((prevErrors) => ({
-  //     ...prevErrors,
-  //     [name]: value ? "" : prevErrors[name],
-  //   }));
-  // };
-
+  /**
+   * Lida com mudanças nos campos do formulário.
+   * @param {Object} e Evento de mudança no campo.
+   */
   const handleFieldChange = async (e) => {
     const { name, value } = e.target;
-    handleChange(e, "retirada"); // Passar o tipo de formulário corretamente
+    handleChange(e, "retirada");
     setErrors((prevErrors) => ({
       ...prevErrors,
       [name]: value ? "" : prevErrors[name],
     }));
-
-    if (name === "produto_id" && value) {
-      console.log(name, ": ", value);
-      try {
-        // Fazer a requisição para obter os detalhes do produto
-        const response = await api.get(`/entradas/${value}`);
-        const selectedProduct = response.data;
-
-        console.log(selectedProduct);
-
-        // Buscar o número de lote associado ao produto
-        if (selectedProduct.numero_lote) {
-          console.log(selectedProduct.numero_lote);
-          handleChange(
-            {
-              target: {
-                name: "numero_lote",
-                value: selectedProduct.numero_lote,
-              },
-            },
-            "retirada"
-          );
-        } else {
-          console.log("Não deu");
-          handleChange(
-            { target: { name: "numero_lote", value: "" } },
-            "retirada"
-          );
-        }
-      } catch (error) {
-        console.error("Erro ao buscar número de lote do produto:", error);
-        toast.error("Erro ao carregar número de lote do produto.");
-      }
-    }
   };
 
+  //  Reseta o formulário.
   const handleReset = () => {
     handleCancel();
     setErrors({});
   };
 
+  //  Envia os dados da retirada para a API.
   const handleSubmit = async () => {
     if (!validateFields()) {
       toast.warning("Preencha todos os campos obrigatórios.");
@@ -146,7 +97,6 @@ const RetiradaProdutos = () => {
       const response = await api.post("/retiradas", retiradaData);
       console.log("Retirada adicionada:", response.data);
       toast.success("Retirada cadastrada com sucesso!");
-
       handleCancel();
     } catch (error) {
       console.error("Erro ao adicionar Retirada:", error);

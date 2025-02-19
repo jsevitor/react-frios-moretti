@@ -9,10 +9,11 @@ import { toast } from "react-toastify";
  * @property {Object} usuarioData - Dados do formulário de usuário.
  * @property {Object} entradaData - Dados do formulário de entrada.
  * @property {Object} retiradaData - Dados do formulário de retirada.
- * @property {Function} handleChange - Função para atualizar os dados do formulário com base no evento de mudança.
- * @property {Function} handleSubmit - Função para lidar com o envio do formulário (exibe um aviso de preenchimento necessário).
- * @property {Function} handleCancel - Função para cancelar e redefinir todos os formulários para seus estados iniciais.
- * @property {Function} handleClearForm - Função para limpar todos os campos dos formulários.
+ * @property {Function} handleChange - Atualiza os dados do formulário com base no evento de mudança.
+ * @property {Function} handleSubmit - Lida com o envio do formulário (exibe um aviso de preenchimento necessário).
+ * @property {Function} handleCancel - Cancela e redefine todos os formulários para seus estados iniciais.
+ * @property {Function} handleClearForm - Limpa todos os campos dos formulários.
+ * @property {Function} setFormData - Define os dados do formulário manualmente.
  */
 
 export const FormContext = createContext();
@@ -81,9 +82,9 @@ export const FormProvider = ({ children }) => {
   const [retiradaData, setRetiradaData] = useState(initialRetiradaData);
 
   /**
-   * Função para atualizar os dados do formulário com base no evento de mudança.
-   * @param {Event} e - Evento de mudança de input.
-   * @param {string} formType - Tipo de formulário para atualizar.
+   * Atualiza os dados do formulário com base no evento de mudança.
+   * @param {Event} e - Evento de mudança do input.
+   * @param {string} formType - Tipo de formulário a ser atualizado.
    */
   const handleChange = (e, formType) => {
     if (!e || !e.target) {
@@ -95,51 +96,31 @@ export const FormProvider = ({ children }) => {
 
     switch (formType) {
       case "fornecedor":
-        setFornecedorData((prevData) => ({
-          ...prevData,
-          [name]: value,
-        }));
+        setFornecedorData((prevData) => ({ ...prevData, [name]: value }));
         break;
       case "produto":
-        setProdutoData((prevData) => ({
-          ...prevData,
-          [name]: value,
-        }));
+        setProdutoData((prevData) => ({ ...prevData, [name]: value }));
         break;
       case "usuario":
-        setUsuarioData((prevData) => ({
-          ...prevData,
-          [name]: value,
-        }));
+        setUsuarioData((prevData) => ({ ...prevData, [name]: value }));
         break;
       case "entrada":
-        setEntradaData((prevData) => ({
-          ...prevData,
-          [name]: value,
-        }));
+        setEntradaData((prevData) => ({ ...prevData, [name]: value }));
         break;
       case "retirada":
-        setRetiradaData((prevData) => ({
-          ...prevData,
-          [name]: value,
-        }));
+        setRetiradaData((prevData) => ({ ...prevData, [name]: value }));
         break;
       default:
         break;
     }
   };
 
-  /**
-   * Função para lidar com o envio do formulário.
-   * Exibe um aviso de preenchimento necessário.
-   */
+  //  Exibe um aviso de preenchimento necessário ao tentar enviar o formulário.
   const handleSubmit = () => {
     toast.warning("Preencha todos os campos necessários.");
   };
 
-  /**
-   * Função para cancelar e redefinir todos os formulários para seus estados iniciais.
-   */
+  // Cancela e redefine todos os formulários para seus estados iniciais.
   const handleCancel = () => {
     setFornecedorData(initialFornecedorData);
     setProdutoData(initialProdutoData);
@@ -148,9 +129,7 @@ export const FormProvider = ({ children }) => {
     setRetiradaData(initialRetiradaData);
   };
 
-  /**
-   * Função para limpar todos os campos dos formulários.
-   */
+  //  Limpa todos os campos dos formulários.
   const handleClearForm = () => {
     setFornecedorData(initialFornecedorData);
     setProdutoData(initialProdutoData);
@@ -159,6 +138,11 @@ export const FormProvider = ({ children }) => {
     setRetiradaData(initialRetiradaData);
   };
 
+  /**
+   * Define os dados do formulário manualmente.
+   * @param {Object} data - Os novos dados do formulário.
+   * @param {string} formType - O tipo de formulário a ser atualizado.
+   */
   const setFormData = (data, formType) => {
     switch (formType) {
       case "fornecedor":

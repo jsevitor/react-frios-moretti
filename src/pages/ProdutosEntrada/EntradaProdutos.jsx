@@ -2,11 +2,22 @@ import { useContext, useEffect, useState } from "react";
 import { ButtonContainer, FormContainer } from "./Styles";
 import { FormContext } from "../../contexts/FormContext";
 import { ToastContainer, toast } from "react-toastify";
+import { InputField, SelectField } from "../../components/Form/Form";
 import Card from "../../components/Card/Card";
 import Button from "../../components/Button/Button";
-import { InputField, SelectField } from "../../components/Form/Form";
 import api from "../../services/api";
 
+/**
+ * Componente responsável pelo formulário de entrada de produtos.
+ * Permite cadastrar a entrada de produtos, validando os campos obrigatórios
+ * e enviando os dados para a API.
+ *
+ * @component EntradaProdutos
+ * @returns {JSX.Element} O elemento EntradaProdutos.
+ * @example
+ * // Uso do componente
+ *   <EntradaProdutos />
+ */
 const EntradaProdutos = () => {
   const { entradaData, handleChange, handleCancel } = useContext(FormContext);
   const [products, setProducts] = useState([]);
@@ -16,6 +27,7 @@ const EntradaProdutos = () => {
 
   useEffect(() => {
     handleCancel();
+    // Busca os produtos cadastrados na API.
     const fetchProducts = async () => {
       try {
         const response = await api.get("/produtos");
@@ -25,6 +37,7 @@ const EntradaProdutos = () => {
       }
     };
 
+    // Busca os fornecedores cadastrados na API.
     const fetchSuppliers = async () => {
       try {
         const response = await api.get("/fornecedores");
@@ -38,50 +51,41 @@ const EntradaProdutos = () => {
     fetchSuppliers();
   }, []);
 
+  /**
+   * Valida os campos obrigatórios do formulário.
+   * @returns {boolean} Retorna true se os campos forem válidos, caso contrário false.
+   */
   const validateFields = () => {
-    let validationErrors = {};
+    const validationErrors = {};
+    const requiredFields = [
+      "produto_id",
+      "quantidade",
+      "fornecedor_id",
+      "data_entrada",
+      "numero_lote",
+      "preco_compra",
+    ];
 
-    if (!entradaData.produto_id) {
-      validationErrors.produto_id = "O campo Produto é obrigatório.";
-    }
-
-    if (!entradaData.quantidade) {
-      validationErrors.quantidade = "O campo Quantidade é obrigatório.";
-    }
-
-    if (!entradaData.fornecedor_id) {
-      validationErrors.fornecedor_id = "O campo Fornecedor é obrigatório.";
-    }
-
-    if (!entradaData.data_entrada) {
-      validationErrors.data_entrada = "O campo Data de Entrada é obrigatório.";
-    }
-
-    if (!entradaData.numero_lote) {
-      validationErrors.numero_lote = "O campo Número de Lote é obrigatório.";
-    }
-
-    if (!entradaData.preco_compra) {
-      validationErrors.preco_compra = "O campo Preço de Compra é obrigatório.";
-    }
+    requiredFields.forEach((field) => {
+      if (!entradaData[field]) {
+        validationErrors[field] = `O campo ${field.replace(
+          "_",
+          " "
+        )} é obrigatório.`;
+      }
+    });
 
     setErrors(validationErrors);
-
     return Object.keys(validationErrors).length === 0;
   };
 
-  // const handleFieldChange = (e) => {
-  //   const { name, value } = e.target;
-  //   handleChange(e, "entrada"); // Passar o tipo de formulário corretamente
-  //   setErrors((prevErrors) => ({
-  //     ...prevErrors,
-  //     [name]: value ? "" : prevErrors[name],
-  //   }));
-  // };
-
+  /**
+   * Manipula mudanças nos campos do formulário e ajusta automaticamente o fornecedor, se aplicável.
+   * @param {object} e - Evento de mudança do campo.
+   */
   const handleFieldChange = async (e) => {
     const { name, value } = e.target;
-    handleChange(e, "entrada"); // Passar o tipo de formulário corretamente
+    handleChange(e, "entrada");
     setErrors((prevErrors) => ({
       ...prevErrors,
       [name]: value ? "" : prevErrors[name],
@@ -92,24 +96,15 @@ const EntradaProdutos = () => {
         const response = await api.get(`/produtos/${value}`);
         const selectedProduct = response.data;
 
-        if (selectedProduct.fornecedor_id) {
-          console.log(selectedProduct.fornecedor_id);
-          handleChange(
-            {
-              target: {
-                name: "fornecedor_id",
-                value: selectedProduct.fornecedor_id,
-              },
+        handleChange(
+          {
+            target: {
+              name: "fornecedor_id",
+              value: selectedProduct.fornecedor_id || "",
             },
-            "entrada"
-          );
-        } else {
-          console.log("Deu erro");
-          handleChange(
-            { target: { name: "fornecedor_id", value: "" } },
-            "entrada"
-          );
-        }
+          },
+          "entrada"
+        );
       } catch (error) {
         console.error("Erro ao buscar fornecedor do produto:", error);
         toast.error("Erro ao carregar fornecedor do produto.");
@@ -117,11 +112,13 @@ const EntradaProdutos = () => {
     }
   };
 
+  //  Reseta o formulário e remove os erros de validação.
   const handleReset = () => {
     handleCancel();
     setErrors({});
   };
 
+  // Submete o formulário de entrada de produtos.
   const handleSubmit = async () => {
     if (!validateFields()) {
       toast.warning("Preencha todos os campos obrigatórios.");
@@ -130,13 +127,8 @@ const EntradaProdutos = () => {
 
     setIsSubmitting(true);
     try {
-      // Verifique se entradaData está corretamente preenchido
-      console.log("Dados a serem enviados:", entradaData);
-
-      const response = await api.post("/entradas", entradaData);
-      console.log("Entrada adicionada:", response.data);
+      await api.post("/entradas", entradaData);
       toast.success("Entrada cadastrada com sucesso!");
-
       handleCancel();
     } catch (error) {
       console.error("Erro ao adicionar entrada:", error);
@@ -147,12 +139,12 @@ const EntradaProdutos = () => {
   };
 
   return (
-    <Card title={"Entrada de Produto"} icon={"bi bi-download"}>
+    <Card title="Entrada de Produto" icon="bi bi-download">
       <ToastContainer />
       <FormContainer>
         <SelectField
-          label={"Produto"}
-          name={"produto_id"}
+          label="Produto"
+          name="produto_id"
           value={entradaData.produto_id || ""}
           onChange={handleFieldChange}
           warn={errors.produto_id}
@@ -164,55 +156,46 @@ const EntradaProdutos = () => {
             </option>
           ))}
         </SelectField>
-        {/* <InputField
-          label={"Produto"}
-          name={"produto_id"}
-          value={entradaData.produto_id || ""}
-          onChange={handleFieldChange}
-          warn={errors.produto_id}
-        /> */}
         <InputField
-          label={"Quantidade"}
-          name={"quantidade"}
+          label="Quantidade"
+          name="quantidade"
           value={entradaData.quantidade || ""}
           onChange={handleFieldChange}
           warn={errors.quantidade}
         />
         <SelectField
-          label={"Fornecedor"}
-          name={"fornecedor_id"}
+          label="Fornecedor"
+          name="fornecedor_id"
           value={entradaData.fornecedor_id || ""}
           onChange={handleFieldChange}
           warn={errors.fornecedor_id}
         >
-          <option value="" disabled>
-            Selecione
-          </option>
-          {suppliers.map((supplier, index) => (
-            <option key={index} value={supplier.id} disabled>
+          <option value="">Selecione</option>
+          {suppliers.map((supplier) => (
+            <option key={supplier.id} value={supplier.id}>
               {supplier.nome}
             </option>
           ))}
         </SelectField>
         <InputField
-          label={"Data de Entrada"}
-          name={"data_entrada"}
-          type={"date"}
+          label="Data de Entrada"
+          name="data_entrada"
+          type="date"
           value={entradaData.data_entrada || ""}
           onChange={handleFieldChange}
           warn={errors.data_entrada}
         />
         <InputField
-          label={"Número de Lote"}
-          name={"numero_lote"}
+          label="Número de Lote"
+          name="numero_lote"
           value={entradaData.numero_lote || ""}
           onChange={handleFieldChange}
           warn={errors.numero_lote}
         />
         <InputField
-          label={"Preço de Compra"}
-          name={"preco_compra"}
-          type={"number"}
+          label="Preço de Compra"
+          name="preco_compra"
+          type="number"
           value={entradaData.preco_compra || ""}
           onChange={handleFieldChange}
           warn={errors.preco_compra}
@@ -220,12 +203,12 @@ const EntradaProdutos = () => {
       </FormContainer>
       <ButtonContainer>
         <Button
-          label={"Adicionar"}
+          label="Adicionar"
           onClick={handleSubmit}
           disabled={isSubmitting}
         />
         <Button
-          label={"Cancelar"}
+          label="Cancelar"
           onClick={handleReset}
           disabled={isSubmitting}
         />

@@ -12,9 +12,20 @@ import {
 } from "./Styles";
 import { ToastContainer, toast } from "react-toastify";
 import { Modal, ModalEditProdutos } from "../../components/Modal/Modal";
-import api from "../../services/api";
 import { FormContext } from "../../contexts/FormContext";
 import { ClipLoader } from "react-spinners";
+import api from "../../services/api";
+
+/**
+ * Componente para exibição e gerenciamento de produtos cadastrados.
+ * Este componente permite visualizar, editar e excluir produtos.
+ *
+ * @component ProdutosCadastrados
+ * @returns {JSX.Element} O elemento ProdutosCadastrados.
+ * @example
+ * // Uso do componente
+ *   <ProdutosCadastrados />
+ */
 
 const ProdutosCadastrados = () => {
   const { setFormData } = useContext(FormContext);
@@ -27,27 +38,29 @@ const ProdutosCadastrados = () => {
   const [suppliers, setSuppliers] = useState([]);
 
   useEffect(() => {
+    // Busca os produtos cadastrados na API.
     const fetchData = async () => {
-      setLoading(true); // Inicia o loading
+      setLoading(true);
       try {
         const response = await api.get("/produtos");
         setProducts(response.data);
       } catch (error) {
         console.error("Erro ao buscar produtos:", error);
       } finally {
-        setLoading(false); // Finaliza o loading
+        setLoading(false);
       }
     };
 
+    // Busca os fornecedores cadastrados na API.
     const fetchSuppliers = async () => {
-      setLoading(true); // Inicia o loading
+      setLoading(true);
       try {
         const response = await api.get("/fornecedores");
         setSuppliers(response.data);
       } catch (error) {
         console.error("Erro ao buscar fornecedores:", error);
       } finally {
-        setLoading(false); // Finaliza o loading
+        setLoading(false);
       }
     };
 
@@ -55,6 +68,7 @@ const ProdutosCadastrados = () => {
     fetchSuppliers();
   }, []);
 
+  // Abre o modal de exclusão se houver itens selecionados.
   const handleOpenModal = () => {
     if (selectedItems.length > 0) {
       setOpenModal(true);
@@ -63,16 +77,18 @@ const ProdutosCadastrados = () => {
     }
   };
 
+  // Fecha o modal de exclusão.
   const handleCloseModal = () => {
     setOpenModal(false);
   };
 
+  // Abre o modal de edição se apenas um item estiver selecionado.
   const handleOpenEditModal = () => {
     if (selectedItems.length === 1) {
       const item = products.find((i) => i.id === selectedItems[0]);
       if (item) {
         setItemToEdit(item);
-        setFormData(item, "produto"); // Atualize o contexto com os dados do item
+        setFormData(item, "produto");
         setOpenEditModal(true);
       }
     } else if (selectedItems.length === 0) {
@@ -82,14 +98,16 @@ const ProdutosCadastrados = () => {
     }
   };
 
+  // Fecha o modal de edição e atualiza a tabela.
   const handleCloseEditModal = () => {
     setOpenEditModal(false);
     setItemToEdit(null);
     handleTableUpdate();
   };
 
+  // Atualiza a lista de produtos consultando a API.
   const handleTableUpdate = async () => {
-    setLoading(true); // Inicia o loading
+    setLoading(true);
     try {
       const response = await api.get("/produtos");
       setProducts(response.data);
@@ -97,10 +115,14 @@ const ProdutosCadastrados = () => {
     } catch (error) {
       toast.error("Erro ao atualizar a lista.");
     } finally {
-      setLoading(false); // Finaliza o loading
+      setLoading(false);
     }
   };
 
+  /**
+   * Gerencia a seleção de itens na tabela.
+   * @param {number} itemId - ID do item selecionado.
+   */
   const handleCheckboxChange = (itemId) => {
     setSelectedItems((prevSelected) =>
       prevSelected.includes(itemId)
@@ -109,6 +131,7 @@ const ProdutosCadastrados = () => {
     );
   };
 
+  // Deleta os itens selecionados chamando a API.
   const handleDelete = async () => {
     try {
       await Promise.all(

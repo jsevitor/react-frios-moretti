@@ -9,8 +9,8 @@ export const colors = {
   lightGray: "#D9D9D9",
   veryLightGray: "#F2F0F0",
   white: "#FFFFFF",
-
   dark: "#474747",
+  footer: "#47474796",
 
   // Backgrounds
   bgBody: "#F1F1F1",

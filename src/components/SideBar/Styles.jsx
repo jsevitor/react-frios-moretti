@@ -14,7 +14,6 @@ export const Container = styled.div`
   left: 50%;
   transform: translateX(-50%);
   animation: showSidebar 0.4s;
-  /* box-shadow: 0px 5px 8px 2px rgba(184, 184, 184, 1); */
   border-right: 1px solid rgba(184, 184, 184, 1);
   z-index: 999;
 
@@ -27,6 +26,7 @@ export const Container = styled.div`
 
   @media (min-width: 1024px) {
     display: flex;
+    justify-content: space-between;
     position: fixed;
     top: 80px;
     left: 0;
@@ -66,7 +66,7 @@ export const HideMenu = styled.div`
 `;
 
 export const NavContainer = styled.nav`
-  /* padding: 0 0.5rem; */
+  flex: 1;
 `;
 
 export const MenuItems = styled.ul`

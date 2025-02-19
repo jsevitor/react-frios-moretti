@@ -12,11 +12,21 @@ import {
 } from "./Styles";
 import { ToastContainer, toast } from "react-toastify";
 import { Modal, ModalEditRetiradas } from "../../components/Modal/Modal";
-import api from "../../services/api";
-import { formatCurrency, formatCustomDate } from "../../utils/functions";
+import { formatCustomDate } from "../../utils/functions";
 import { FormContext } from "../../contexts/FormContext";
 import { ClipLoader } from "react-spinners";
+import api from "../../services/api";
 
+/**
+ * Componente para exibição e gerenciamento de retiradas cadastradas.
+ * Este componente permite visualizar, editar e excluir retiradas no sistema.
+ *
+ * @component RetiradasCadastradas
+ * @returns {JSX.Element} O elemento RetiradasCadastradas.
+ * @example
+ * // Uso do componente
+ *   <RetiradasCadastradas />
+ */
 const RetiradasCadastradas = () => {
   const { setFormData } = useContext(FormContext);
   const [outputs, setOutputs] = useState([]);
@@ -28,27 +38,29 @@ const RetiradasCadastradas = () => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
+    // Função para buscar dados de retiradas e produtos
     const fetchData = async () => {
-      setLoading(true); // Inicia o loading
+      setLoading(true);
       try {
         const response = await api.get("/retiradas");
         setOutputs(response.data);
       } catch (error) {
         console.error("Erro ao buscar retiradas:", error);
       } finally {
-        setLoading(false); // Finaliza o loading
+        setLoading(false);
       }
     };
 
+    // Função para buscar dados de produtos
     const fetchProducts = async () => {
-      setLoading(true); // Inicia o loading
+      setLoading(true);
       try {
         const response = await api.get("/produtos");
         setProducts(response.data);
       } catch (error) {
         console.error("Erro ao buscar produtos:", error);
       } finally {
-        setLoading(false); // Finaliza o loading
+        setLoading(false);
       }
     };
 
@@ -56,6 +68,7 @@ const RetiradasCadastradas = () => {
     fetchProducts();
   }, []);
 
+  // Abre o modal de exclusão
   const handleOpenModal = () => {
     if (selectedItems.length > 0) {
       setOpenModal(true);
@@ -64,10 +77,12 @@ const RetiradasCadastradas = () => {
     }
   };
 
+  // Fecha o modal de exclusão
   const handleCloseModal = () => {
     setOpenModal(false);
   };
 
+  // Abre o modal de edição e define os dados
   const handleOpenEditModal = () => {
     if (selectedItems.length === 1) {
       const item = outputs.find((i) => i.id === selectedItems[0]);
@@ -83,14 +98,16 @@ const RetiradasCadastradas = () => {
     }
   };
 
+  // Fecha o modal de edição e atualiza a tabela
   const handleCloseEditModal = () => {
     setOpenEditModal(false);
     setItemToEdit(null);
     handleTableUpdate();
   };
 
+  // Atualiza a tabela de retiradas
   const handleTableUpdate = async () => {
-    setLoading(true); // Inicia o loading
+    setLoading(true);
     try {
       const response = await api.get("/retiradas");
       setOutputs(response.data);
@@ -98,10 +115,14 @@ const RetiradasCadastradas = () => {
     } catch (error) {
       toast.error("Erro ao atualizar a lista.");
     } finally {
-      setLoading(false); // Finaliza o loading
+      setLoading(false);
     }
   };
 
+  /**
+   * Gerencia a seleção de itens na tabela.
+   * @param {number} itemId - ID do item selecionado.
+   */
   const handleCheckboxChange = (itemId) => {
     setSelectedItems((prevSelected) =>
       prevSelected.includes(itemId)
@@ -110,6 +131,7 @@ const RetiradasCadastradas = () => {
     );
   };
 
+  // Deleta os itens selecionados
   const handleDelete = async () => {
     try {
       await Promise.all(

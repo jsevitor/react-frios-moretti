@@ -5,9 +5,7 @@ import {
   BsChevronLeft,
   BsChevronRight,
   BsChevronUp,
-  BsGear,
   BsHouse,
-  BsReverseLayoutTextWindowReverse,
   BsTruck,
 } from "react-icons/bs";
 import {
@@ -23,19 +21,20 @@ import {
 } from "./Styles";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import Footer from "../Footer/Footer";
 
 /**
  * Componente de barra lateral de navegação.
+ * Este componente exibe um menu lateral com opções de navegação, permitindo expandir e colapsar submenus.
  *
- * @component
- * @param {Object} props - As props que o componente aceita.
- * @param {boolean} props.active - Indica se a barra lateral está ativa.
+ * @component SideBar
+ * @param {Object} props - As propriedades do componente.
+ * @param {boolean} props.active - Define se a barra lateral está visível.
  * @param {boolean} props.menuCollapsed - Indica se o menu está colapsado.
- * @param {Function} props.setMenuCollapsed - Função para definir o estado colapsado do menu.
+ * @param {Function} props.setMenuCollapsed - Função para alternar o estado do menu.
  * @returns {JSX.Element} O elemento SideBar.
  *
  * @example
- * // Uso do SideBar
  * <SideBar active={isActive} menuCollapsed={isCollapsed} setMenuCollapsed={setCollapsed} />
  */
 const SideBar = ({ active, menuCollapsed, setMenuCollapsed }) => {
@@ -46,6 +45,7 @@ const SideBar = ({ active, menuCollapsed, setMenuCollapsed }) => {
       localStorage.getItem("isOpenMovimentacoesSubMenu") === "true",
   });
 
+  // Atualiza o localStorage sempre que os estados dos submenus ou do menu principal mudam
   useEffect(() => {
     localStorage.setItem("isOpenProdutosSubMenu", subMenus.produtos);
     localStorage.setItem("isOpenCadastrosSubMenu", subMenus.cadastros);
@@ -54,33 +54,21 @@ const SideBar = ({ active, menuCollapsed, setMenuCollapsed }) => {
   }, [subMenus, menuCollapsed]);
 
   /**
-   * Alterna o estado do sub-menu especificado entre aberto e fechado.
-   * @param {string} menu - O nome do sub-menu a ser alternado.
+   * Alterna a visibilidade de um submenu específico.
+   * @param {string} menu - O identificador do submenu a ser alternado.
    */
   const toggleSubMenu = (menu) => {
-    setSubMenus((prev) => ({
-      ...prev,
-      [menu]: !prev[menu],
-    }));
+    setSubMenus((prev) => ({ ...prev, [menu]: !prev[menu] }));
 
     if (menuCollapsed) {
       setMenuCollapsed(false);
     }
   };
 
-  /**
-   * Alterna o estado do menu entre colapsado e expandido.
-   */
+  // Alterna entre expandir e colapsar o menu lateral.
   const toggleMenu = () => {
     setMenuCollapsed(!menuCollapsed);
-
-    if (subMenus.produtos || subMenus.cadastros || subMenus.movimentacoes) {
-      setSubMenus({
-        produtos: false,
-        cadastros: false,
-        movimentacoes: false,
-      });
-    }
+    setSubMenus({ produtos: false, cadastros: false, movimentacoes: false });
   };
 
   return (
@@ -89,39 +77,34 @@ const SideBar = ({ active, menuCollapsed, setMenuCollapsed }) => {
         onClick={toggleMenu}
         className={menuCollapsed ? "collapsed" : ""}
       >
-        {menuCollapsed ? (
-          <Icon as={BsChevronLeft} />
-        ) : (
-          <Icon as={BsChevronRight} />
-        )}
+        <Icon as={menuCollapsed ? BsChevronLeft : BsChevronRight} />
       </HideMenu>
       <hr />
       <NavContainer>
         <MenuItems className={menuCollapsed ? "collapsed" : ""}>
           <MenuItem>
-            <Link to={"/"}>
+            <Link to="/">
               <Icon as={BsHouse} />
               {!menuCollapsed && <ItemTitle>Início</ItemTitle>}
             </Link>
           </MenuItem>
 
           <MenuItem>
-            <Link to={"#"} onClick={() => toggleSubMenu("cadastros")}>
+            <Link to="#" onClick={() => toggleSubMenu("cadastros")}>
               <Icon as={BsTruck} />
               {!menuCollapsed && <ItemTitle>Fornecedores</ItemTitle>}
-              {!menuCollapsed &&
-                (subMenus.cadastros ? <BsChevronUp /> : <BsChevronDown />)}
+              {!menuCollapsed && (
+                <Icon as={subMenus.cadastros ? BsChevronUp : BsChevronDown} />
+              )}
             </Link>
             {!menuCollapsed && (
               <SubMenu isOpen={subMenus.cadastros}>
-                <SubMenuItem
-                  className={subMenus.cadastros ? "collapsedSubMenu" : ""}
-                >
-                  <Link to={"/cadastro-fornecedor"}>
+                <SubMenuItem>
+                  <Link to="/cadastro-fornecedor">
                     <ItemTitle>Cadastrar Fornecedor</ItemTitle>
                   </Link>
-                  <Link to={"/fornecedores"}>
-                    <ItemTitle>Fornecedor Cadastrados</ItemTitle>
+                  <Link to="/fornecedores">
+                    <ItemTitle>Fornecedores Cadastrados</ItemTitle>
                   </Link>
                 </SubMenuItem>
               </SubMenu>
@@ -129,32 +112,32 @@ const SideBar = ({ active, menuCollapsed, setMenuCollapsed }) => {
           </MenuItem>
 
           <MenuItem>
-            <Link to={"#"} onClick={() => toggleSubMenu("produtos")}>
+            <Link to="#" onClick={() => toggleSubMenu("produtos")}>
               <Icon as={BsBoxSeam} />
               {!menuCollapsed && <ItemTitle>Produtos</ItemTitle>}
-              {!menuCollapsed &&
-                (subMenus.produtos ? <BsChevronUp /> : <BsChevronDown />)}
+              {!menuCollapsed && (
+                <Icon as={subMenus.produtos ? BsChevronUp : BsChevronDown} />
+              )}
             </Link>
             {!menuCollapsed && (
               <SubMenu isOpen={subMenus.produtos}>
                 <SubMenuItem>
-                  <Link to={"/cadastro-produto"}>
+                  <Link to="/cadastro-produto">
                     <ItemTitle>Cadastrar Produto</ItemTitle>
                   </Link>
-                  <Link to={"/entrada-produtos"}>
+                  <Link to="/entrada-produtos">
                     <ItemTitle>Cadastrar Entrada</ItemTitle>
                   </Link>
-                  <Link to={"/retirada-produtos"}>
+                  <Link to="/retirada-produtos">
                     <ItemTitle>Cadastrar Retirada</ItemTitle>
                   </Link>
-
-                  <Link to={"/produtos-cadastrados"}>
+                  <Link to="/produtos-cadastrados">
                     <ItemTitle>Produtos Cadastrados</ItemTitle>
                   </Link>
-                  <Link to={"/entradas"}>
+                  <Link to="/entradas">
                     <ItemTitle>Entradas Cadastradas</ItemTitle>
                   </Link>
-                  <Link to={"/retiradas"}>
+                  <Link to="/retiradas">
                     <ItemTitle>Retiradas Cadastradas</ItemTitle>
                   </Link>
                 </SubMenuItem>
@@ -163,20 +146,14 @@ const SideBar = ({ active, menuCollapsed, setMenuCollapsed }) => {
           </MenuItem>
 
           <MenuItem>
-            <Link to={"/movimentacoes"}>
+            <Link to="/movimentacoes">
               <Icon as={BsArrowLeftRight} />
               {!menuCollapsed && <ItemTitle>Movimentações</ItemTitle>}
             </Link>
           </MenuItem>
-
-          {/* <MenuItem>
-            <Link to={"/painel-controle"}>
-              <Icon as={BsGear} />
-              {!menuCollapsed && <ItemTitle>Painel de Controle</ItemTitle>}
-            </Link>
-          </MenuItem> */}
         </MenuItems>
       </NavContainer>
+      {!menuCollapsed && <Footer />}
     </Container>
   );
 };

@@ -2,8 +2,9 @@ import { Container, Input, Label, Select, Warn } from "./Styles";
 
 /**
  * Componente de campo de entrada reutilizável.
+ * Este componente renderiza um campo de entrada com um rótulo, tipo, e valor controlado.
  *
- * @component
+ * @component InputField
  * @param {Object} props - As props que o componente aceita.
  * @param {string} props.label - O texto do rótulo para o campo de entrada.
  * @param {string} props.name - O nome do campo de entrada.
@@ -11,6 +12,7 @@ import { Container, Input, Label, Select, Warn } from "./Styles";
  * @param {string} [props.placeholder] - O texto placeholder do campo de entrada.
  * @param {string} props.value - O valor do campo de entrada.
  * @param {Function} props.onChange - A função chamada quando o valor do campo de entrada muda.
+ * @param {string} [props.warn] - Mensagem de advertência que será exibida abaixo do campo (opcional).
  * @returns {JSX.Element} O elemento InputField.
  *
  * @example
@@ -50,6 +52,8 @@ const InputField = ({
 /**
  * Componente de campo de seleção reutilizável.
  *
+ * Este componente renderiza um campo de seleção (dropdown) com um rótulo e opções personalizáveis.
+ *
  * @component
  * @param {Object} props - As props que o componente aceita.
  * @param {string} props.label - O texto do rótulo para o campo de seleção.
@@ -57,6 +61,7 @@ const InputField = ({
  * @param {string} props.value - O valor selecionado no campo de seleção.
  * @param {Function} props.onChange - A função chamada quando o valor do campo de seleção muda.
  * @param {React.ReactNode} props.children - As opções a serem exibidas no campo de seleção.
+ * @param {string} [props.warn] - Mensagem de advertência que será exibida abaixo do campo de seleção (opcional).
  * @returns {JSX.Element} O elemento SelectField.
  *
  * @example
